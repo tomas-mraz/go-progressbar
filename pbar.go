@@ -3,7 +3,6 @@ package pbar
 import (
 	"fmt"
 	"github.com/tomas-mraz/go-ansi"
-	"log"
 	"math"
 	"strings"
 	"sync"
@@ -47,8 +46,6 @@ func New(max int) *ProgressBar {
 func (p *ProgressBar) End() {
 	// zapamatovat pozici
 	x, y := ansi.GetCursorPosition()
-	log.Println(x)
-	log.Println(y)
 
 	// přejít na poslední řádek
 	if ansi.IsLastLine() {
@@ -71,8 +68,6 @@ func (p *ProgressBar) Add(added int) {
 
 	// zapamatovat pozici
 	x, y := ansi.GetCursorPosition()
-	//log.Println(x)
-	//log.Println(y)
 
 	// vymazat řádek
 	if x == 0 {
