@@ -39,6 +39,7 @@ func New(max int) *ProgressBar {
 		total:             max,
 	}
 
+	//TODO show cursor in case app termination
 	ansi.CursorHide()
 	return &bar
 }
@@ -47,11 +48,16 @@ func (p *ProgressBar) End() {
 	// zapamatovat pozici
 	x, y := ansi.GetCursorPosition()
 
-	// přejít na poslední řádek
-	if ansi.IsLastLine() {
-		//fmt.Println()
+	// optimalizace blikání
+	if x > 0 && !ansi.IsLastLine() {
 		ansi.CursorDown(1)
-	} else {
+		ansi.CursorHorizontalAbsolute(0)
+		x = 0
+		y++
+	}
+
+	// přejít na poslední řádek
+	if !ansi.IsLastLine() {
 		ansi.LastLine()
 	}
 
@@ -69,18 +75,22 @@ func (p *ProgressBar) Add(added int) {
 	// zapamatovat pozici
 	x, y := ansi.GetCursorPosition()
 
-	// vymazat řádek
-	if x == 0 {
-		ansi.EraseInLine(1)
+	// optimalizace blikání
+	if x > 0 && !ansi.IsLastLine() {
+		ansi.CursorDown(1)
+		ansi.CursorHorizontalAbsolute(0)
+		x = 0
+		y++
 	}
 
 	// přejít na poslední řádek
 	if ansi.IsLastLine() {
-		//fmt.Println()
+		ansi.EraseInLine(1)
 		ansi.CursorDown(1)
 		p.bottomScrollIndex++
 	} else {
 		ansi.LastLine()
+		ansi.EraseInLine(1)
 	}
 
 	// detekce posunutí okna
@@ -101,8 +111,8 @@ func (p *ProgressBar) Add(added int) {
 	remainingTime := totalTime - consumedTime
 	prefix := fmt.Sprintf("Progress: [%3d%%]", p.progress*100/p.total)
 	suffix := fmt.Sprintf("(%s|%s)", formatDuration(consumedTime), formatDuration(remainingTime))
-	counter := fmt.Sprintf("%d / %d", p.progress, p.total)
-	barWidth := int(math.Abs(float64(p.terminalHeight - (len(prefix) + len(counter) + len(suffix) + 7))))
+	counter := fmt.Sprintf("%d/%d", p.progress, p.total)
+	barWidth := int(math.Abs(float64(p.terminalHeight - (len(prefix) + len(counter) + len(suffix) + 6))))
 	barDone := int(float64(barWidth) * float64(p.progress) / float64(p.total)) // Calculate the bar done length
 	done := strings.Repeat(p.doneStr, barDone)                                 // Fill the bar with done string
 	empty := strings.Repeat(p.emptyStr, barWidth-barDone)                      // Fill the bar with todo string
