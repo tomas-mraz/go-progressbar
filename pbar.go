@@ -85,7 +85,7 @@ func (p *ProgressBar) Add(added int) {
 
 	// přejít na poslední řádek
 	if ansi.IsLastLine() {
-		ansi.EraseInLine(1)
+		ansi.EraseInLine(3)
 		ansi.CursorDown(1)
 		p.bottomScrollIndex++
 	} else {
@@ -99,7 +99,7 @@ func (p *ProgressBar) Add(added int) {
 	if offset != 0 {
 		if offset != 0 {
 			ansi.CursorUp(offset)
-			ansi.EraseInLine(1)
+			ansi.EraseInLine(3)
 			ansi.CursorDown(offset)
 			p.bottomScrollIndex = a
 		}
