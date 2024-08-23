@@ -46,7 +46,10 @@ func New(max int) *ProgressBar {
 
 func (p *ProgressBar) End() {
 	// make enter on the end of app output if necessary
-	fmt.Println()
+	x, _ := ansi.GetCursorPosition()
+	if x > 0 {
+		fmt.Println()
+	}
 
 	// zapamatovat pozici nového záznamu
 	x, y := ansi.GetCursorPosition()
@@ -64,7 +67,10 @@ func (p *ProgressBar) Add(added int) {
 	p.progress = p.progress + added
 
 	// make enter on the end of app output if necessary
-	fmt.Println()
+	x, _ := ansi.GetCursorPosition()
+	if x > 0 {
+		fmt.Println()
+	}
 
 	// zapamatovat pozici nového záznamu
 	x, y := ansi.GetCursorPosition()
