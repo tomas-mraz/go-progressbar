@@ -86,7 +86,8 @@ func (p *ProgressBar) Add(added int) {
 	// přejít na poslední řádek
 	if ansi.IsLastLine() {
 		ansi.EraseInLine(3)
-		ansi.CursorDown(1)
+		//ansi.CursorDown(1)
+		fmt.Println() // nejde CursorDown když je na konci screen bufferu
 		p.bottomScrollIndex++
 	} else {
 		ansi.LastLine()
