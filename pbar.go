@@ -71,41 +71,67 @@ func (p *ProgressBar) End() {
 
 func (p *ProgressBar) Add(added int) {
 	p.progress = p.progress + added
+	/*
+		// zapamatovat pozici
+		x, y := ansi.GetCursorPosition()
 
-	// zapamatovat pozici
+		// optimalizace blikání
+		if x > 0 && !ansi.IsLastLine() {
+			ansi.CursorDown(1)
+			ansi.CursorHorizontalAbsolute(0)
+			x = 0
+			y++
+		}
+	*/
+	fmt.Println()
 	x, y := ansi.GetCursorPosition()
 
-	// optimalizace blikání
-	if x > 0 && !ansi.IsLastLine() {
-		ansi.CursorDown(1)
-		ansi.CursorHorizontalAbsolute(0)
-		x = 0
-		y++
-	}
-
-	// přejít na poslední řádek
 	if ansi.IsLastLine() {
+		// výpis je na posledním řádku / posouvá se okno
 		ansi.EraseInLine(3)
-		//ansi.CursorDown(1)
-		fmt.Println() // nejde CursorDown když je na konci screen bufferu
-		p.bottomScrollIndex++
+		b1 := ansi.GetBottomScrollIndex()
+		fmt.Println()
+		b2 := ansi.GetBottomScrollIndex()
+		if b1 == b2 {
+			y--
+		}
 	} else {
-		ansi.LastLine()
-		ansi.EraseInLine(1)
-	}
-
-	// detekce posunutí okna
-	a := ansi.GetBottomScrollIndex()
-	offset := a - p.bottomScrollIndex
-	if offset != 0 {
-		if offset != 0 {
-			ansi.CursorUp(offset)
+		// výpis je nahoře/dole vůči dolnímu kraji okna
+		bottomOffset := ansi.BottomOffset()
+		switch {
+		case bottomOffset > 0:
+			// pohled je nahoře vůči kurzoru
+			ansi.CursorAbsolute(x, y)
 			ansi.EraseInLine(3)
-			ansi.CursorDown(offset)
-			p.bottomScrollIndex = a
+			b1 := ansi.GetBottomScrollIndex()
+			fmt.Println()
+			b2 := ansi.GetBottomScrollIndex()
+			if b1 == b2 {
+				y--
+			}
+		case bottomOffset < 0:
+			// výpis je nahoře po posunutí okna
+			ansi.EraseInLine(3)
+			ansi.LastLine()
+		default:
+			// výpis je nahoře v oknu, ale nedošlo k posunutí okna
+			ansi.LastLine()
+			ansi.EraseInLine(3)
 		}
 	}
-
+	/*
+		// detekce posunutí okna
+		a := ansi.GetBottomScrollIndex()
+		offset := a - p.bottomScrollIndex
+		if offset != 0 {
+			if offset != 0 {
+				ansi.CursorUp(offset)
+				ansi.EraseInLine(3)
+				ansi.CursorDown(offset)
+				p.bottomScrollIndex = a
+			}
+		}
+	*/
 	// format and print bar line
 	consumedTime := time.Since(p.startTime)
 	totalTime := time.Duration(consumedTime.Seconds()*float64(p.total)/float64(p.progress)) * time.Second
@@ -121,6 +147,7 @@ func (p *ProgressBar) Add(added int) {
 	fmt.Printf("%s %s %s %s", prefix, bar, counter, suffix)
 
 	// vrátit se na původní pozici
+	p.bottomScrollIndex = ansi.GetBottomScrollIndex()
 	ansi.CursorAbsolute(x, y)
 }
 
